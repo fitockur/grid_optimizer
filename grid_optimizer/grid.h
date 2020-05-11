@@ -4,6 +4,7 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include "KDTree/alglibmisc.h"
 
 
 struct node
@@ -15,8 +16,7 @@ struct node
 	double omega; //диссипация кинетической энергии турбулентности
 	double ro; // плотность
 	double ht; // полная энтальпия газа
-	double x, y, z; //декартовы координаты центров масс ячеек сетки
-	int type;
+	//double x, y, z; //декартовы координаты центров масс ячеек сетки
 };
 
 
@@ -25,11 +25,14 @@ class Grid
 public:
 	Grid(int IMAX, int JMAX, int KMAX);
 	void read_file(std::string filename);
-	node get_node(int i, int j, int k);
+	alglib::real_2d_array get_X();
+	const int size();
+	//node get_node(int i, int j, int k);
 private:
 	int IMAX;
 	int JMAX;
 	int KMAX;
-	std::vector<std::vector<std::vector<node>>> nodes;
+	alglib::real_2d_array X; // coords
+	std::vector<node> Y; // values
 };
 
