@@ -1,10 +1,10 @@
 ﻿#pragma once
 
+#include "KDTree/alglibmisc.h"
 #include <string>
 #include <vector>
 #include <fstream>
 #include <iostream>
-#include "KDTree/alglibmisc.h"
 
 
 struct node
@@ -23,11 +23,9 @@ struct node
 class Grid
 {
 public:
-	Grid(int IMAX, int JMAX, int KMAX);
-	void read_file(std::string filename);
+	Grid();
+	void read_file(int IMAX, int JMAX, int KMAX, std::string filename, int t=0);
 	alglib::real_2d_array get_X();
-	const int size();
-	//node get_node(int i, int j, int k);
 private:
 	int IMAX;
 	int JMAX;

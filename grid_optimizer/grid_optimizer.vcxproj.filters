@@ -30,6 +30,9 @@
     <ClCompile Include="KDTree\ap.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="Nearest3DInterpolator.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="grid.h">
@@ -42,6 +45,9 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="KDTree\ap.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="Nearest3DInterpolator.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

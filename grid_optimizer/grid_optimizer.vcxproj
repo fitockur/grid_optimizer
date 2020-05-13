@@ -128,12 +128,14 @@
     <ClCompile Include="KDTree\alglibmisc.cpp" />
     <ClCompile Include="KDTree\ap.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Nearest3DInterpolator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="grid.h" />
     <ClInclude Include="KDTree\alglibinternal.h" />
     <ClInclude Include="KDTree\alglibmisc.h" />
     <ClInclude Include="KDTree\ap.h" />
+    <ClInclude Include="Nearest3DInterpolator.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\data\detailed_grid.dat" />
