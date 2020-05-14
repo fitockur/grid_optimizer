@@ -7,8 +7,7 @@
 #include <iostream>
 
 
-struct node
-{
+struct node {
 	double p;  //давление
 	double u, v, w; //декартовы компоненты скорости 
 	double t; //температура
@@ -16,21 +15,21 @@ struct node
 	double omega; //диссипация кинетической энергии турбулентности
 	double ro; // плотность
 	double ht; // полная энтальпия газа
-	//double x, y, z; //декартовы координаты центров масс ячеек сетки
+	double x, y, z; //декартовы координаты центров масс ячеек сетки
 };
 
 
-class Grid
-{
+class Grid {
 public:
 	Grid();
-	void read_file(int IMAX, int JMAX, int KMAX, std::string filename, int t=0);
-	alglib::real_2d_array get_X();
+	void read_file(int IMAX, int JMAX, int KMAX, std::string filename);
+	std::pair<alglib::real_2d_array, alglib::integer_1d_array> get_X_tags();
+	std::vector<int> get_ijk();
+	node get_node(int i, int j, int k);
 private:
 	int IMAX;
 	int JMAX;
 	int KMAX;
-	alglib::real_2d_array X; // coords
-	std::vector<node> Y; // values
+	std::vector<std::vector<std::vector<node>>> values;
 };
 

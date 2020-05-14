@@ -2,14 +2,14 @@
 
 
 int main() {
-	int rough_imax = 81;
-	int rough_jmax = 102;
-	int rough_kmax = 82;
+	int rough_imax = 135;
+	int rough_jmax = 51;
+	int rough_kmax = 92;
 	std::string rough_filename = "rough_grid.dat";
 
-	int detailed_imax = 322;
-	int detailed_jmax = 204;
-	int detailed_kmax = 401;
+	int detailed_imax = 135;
+	int detailed_jmax = 101;
+	int detailed_kmax = 182;
 	std::string detailed_filename = "detailed_grid.dat";
 
 	Nearest3DInterpolator opt(rough_imax, rough_jmax, rough_kmax, rough_filename,

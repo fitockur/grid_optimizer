@@ -1,55 +1,35 @@
 ﻿#include "grid.h"
 
-Grid::Grid() {}
+Grid::Grid() {
+	this->IMAX = 0;
+	this->IMAX = 0;
+	this->KMAX = 0;
+}
 
-void Grid::read_file(int IMAX, int JMAX, int KMAX, std::string filename, int t) {
+void Grid::read_file(int IMAX, int JMAX, int KMAX, std::string filename) {
 	std::ifstream data_file;
 	std::string path = "../data/" + filename;
-	node tmp;
 	double buf;
-	int counter = 0;
-	double x, y, z;
 
 	this->IMAX = IMAX;
 	this->IMAX = JMAX;
 	this->KMAX = KMAX;
-	if (t == 0) {
-		this->X.setlength(IMAX * JMAX * KMAX, 3);
-		this->Y.reserve(IMAX * JMAX * KMAX);
+
+	this->values.resize(IMAX);
+	for (int i = 0; i < IMAX; i++) {
+		this->values[i].resize(KMAX);
+		for (int k = 0; k < KMAX; k++)
+			this->values[i][k].resize(JMAX);
 	}
-	else if (t == 1) {
-		this->X.setlength(IMAX * JMAX * KMAX, 3);
-	}
-	else
-		this->Y.reserve(IMAX * JMAX * KMAX);
 
 	data_file.open(path, std::ios::in | std::ios::binary);
-	if (data_file.is_open())
-	{
+	if (data_file.is_open()) {
 		for (int i = 0; i < IMAX; i++)  //считывание из файла
 			for (int k = 0; k < KMAX; k++) {
-				for (int j = 0; j < JMAX; j++) {
-					data_file.read((char*)&tmp, sizeof(tmp));
-					data_file.read((char*)&x, sizeof(x));
-					data_file.read((char*)&y, sizeof(y));
-					data_file.read((char*)&z, sizeof(z));
 
-					if (t == 0) {
-						this->X[counter][0] = x;
-						this->X[counter][1] = y;
-						this->X[counter][2] = z;
-						this->Y.push_back(tmp);
-					}
-					else if (t == 1) {
-						this->X[counter][0] = x;
-						this->X[counter][1] = y;
-						this->X[counter][2] = z;
-					}
-					else
-						this->Y.push_back(tmp);
-					
-					counter++;
-				}
+				for (int j = 0; j < JMAX; j++)
+					data_file.read((char*)&this->values[i][k][j], sizeof(node));
+
 				// ненужные нам пока qw и tauw, с ними отдельно,
 				// когда все сойдется, чтоб зря с собой не таскать
 				data_file.read((char*)&buf, sizeof(double));
@@ -62,6 +42,31 @@ void Grid::read_file(int IMAX, int JMAX, int KMAX, std::string filename, int t) 
 		std::cout << "ERROR! File '" << filename << "' not found." << std::endl;
 }
 
-alglib::real_2d_array Grid::get_X() {
-	return this->X;
+std::pair<alglib::real_2d_array, alglib::integer_1d_array> Grid::get_X_tags() {
+	alglib::real_2d_array X;
+	alglib::integer_1d_array tags;
+	int counter = 0;
+	X.setlength(this->IMAX * this->JMAX * this->KMAX, 3);
+	tags.setlength(this->IMAX * this->JMAX * this->KMAX);
+
+	for (size_t i = 0; i < this->IMAX; i++)
+		for (size_t k = 0; k < this->KMAX; k++)
+			for (size_t j = 0; j < this->JMAX; j++) {
+				X[counter][0] = this->values[i][k][j].x;
+				X[counter][1] = this->values[i][k][j].y;
+				X[counter][2] = this->values[i][k][j].z;
+				tags[counter] = counter;
+				counter++;
+			}
+
+	return std::make_pair(X, tags);
+}
+
+std::vector<int> Grid::get_ijk() {
+	std::vector<int> ijk = { this->IMAX, this->JMAX, this->KMAX };
+	return ijk;
+}
+
+node Grid::get_node(int i, int j, int k) {
+	return this->values[i][j][k];
 }
