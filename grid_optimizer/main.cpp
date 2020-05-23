@@ -14,7 +14,7 @@ int main() {
 
 	Nearest3DInterpolator opt(rough_imax, rough_jmax, rough_kmax, rough_filename,
 		detailed_imax, detailed_jmax, detailed_kmax, detailed_filename);
-
+	opt.project();
 //	node node_0 = rough_grid.get_node(0, 0, 0);
 //	std::cout << node_0.p << " " << node_0.x << std::endl;
 	return 0;

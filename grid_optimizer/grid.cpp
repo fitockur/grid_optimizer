@@ -12,22 +12,22 @@ void Grid::read_file(int IMAX, int JMAX, int KMAX, std::string filename) {
 	double buf;
 
 	this->IMAX = IMAX;
-	this->IMAX = JMAX;
+	this->JMAX = JMAX;
 	this->KMAX = KMAX;
 
 	this->values.resize(IMAX);
-	for (int i = 0; i < IMAX; i++) {
+	for (size_t i = 0; i < IMAX; i++) {
 		this->values[i].resize(KMAX);
-		for (int k = 0; k < KMAX; k++)
+		for (size_t k = 0; k < KMAX; k++)
 			this->values[i][k].resize(JMAX);
 	}
 
 	data_file.open(path, std::ios::in | std::ios::binary);
 	if (data_file.is_open()) {
-		for (int i = 0; i < IMAX; i++)  //считывание из файла
-			for (int k = 0; k < KMAX; k++) {
+		for (size_t i = 0; i < IMAX; i++)  //считывание из файла
+			for (size_t k = 0; k < KMAX; k++) {
 
-				for (int j = 0; j < JMAX; j++)
+				for (size_t j = 0; j < JMAX; j++)
 					data_file.read((char*)&this->values[i][k][j], sizeof(node));
 
 				// ненужные нам пока qw и tauw, с ними отдельно,
@@ -62,11 +62,29 @@ std::pair<alglib::real_2d_array, alglib::integer_1d_array> Grid::get_X_tags() {
 	return std::make_pair(X, tags);
 }
 
-std::vector<int> Grid::get_ijk() {
-	std::vector<int> ijk = { this->IMAX, this->JMAX, this->KMAX };
+index Grid::get_ijk() {
+	index ijk = { this->IMAX, this->JMAX, this->KMAX };
+	return ijk;
+}
+
+index Grid::get_ijk(int n) {
+	int n_ = n % (this->KMAX * this->JMAX);
+
+	index ijk = { n / (this->KMAX * this->JMAX), n_ % this->JMAX, n_ / this->JMAX };
 	return ijk;
 }
 
 node Grid::get_node(int i, int j, int k) {
 	return this->values[i][j][k];
+}
+
+alglib::real_1d_array Grid::get_xyz(int i, int j, int k) {
+	alglib::real_1d_array t;
+	t.setlength(3);
+
+	t[0] = this->values[i][j][k].x;
+	t[1] = this->values[i][j][k].y;
+	t[2] = this->values[i][j][k].z;
+
+	return t;
 }
