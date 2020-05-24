@@ -14,6 +14,9 @@ private:
 	void locate(const index & ijk, const index & ijk_v);
 	std::vector<index> get_vertices(const index & ijk_vc);
 	void interpolate(const index & ijk, const std::vector<index> & vertices);
+	void shift(index & ijk, const bool & left);
+	double plane_position(const alglib::real_1d_array & o, const alglib::real_1d_array & a,
+		const alglib::real_1d_array & b, const alglib::real_1d_array & point);
 public:
 	int locate_cnt;
 	int interpolate_cnt;

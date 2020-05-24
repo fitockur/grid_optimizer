@@ -25,12 +25,13 @@ struct node {
 class Grid {
 public:
 	Grid();
-	void read_file(int IMAX, int JMAX, int KMAX, std::string filename);
+	void read_file(const size_t IMAX, const size_t JMAX, const size_t KMAX, const std::string filename);
 	std::pair<alglib::real_2d_array, alglib::integer_1d_array> get_X_tags();
 	index get_ijk();
-	index get_ijk(int n);
-	node get_node(int i, int j, int k);
-	alglib::real_1d_array get_xyz(int i, int j, int k);
+	index get_ijk(const size_t & n);
+	node get_node(const size_t & i, const size_t & j, const size_t & k);
+	void set_node(const size_t & i, const size_t & j, const size_t & k, node p);
+	alglib::real_1d_array get_xyz(const size_t & i, const size_t & j, const size_t & k);
 private:
 	size_t IMAX;
 	size_t JMAX;

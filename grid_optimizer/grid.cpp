@@ -6,7 +6,7 @@ Grid::Grid() {
 	this->KMAX = 0;
 }
 
-void Grid::read_file(int IMAX, int JMAX, int KMAX, std::string filename) {
+void Grid::read_file(const size_t IMAX, const size_t JMAX, const size_t KMAX, const std::string filename) {
 	std::ifstream data_file;
 	std::string path = "../data/" + filename;
 	double buf;
@@ -67,18 +67,22 @@ index Grid::get_ijk() {
 	return ijk;
 }
 
-index Grid::get_ijk(int n) {
+index Grid::get_ijk(const size_t & n) {
 	int n_ = n % (this->KMAX * this->JMAX);
 
 	index ijk = { n / (this->KMAX * this->JMAX), n_ % this->JMAX, n_ / this->JMAX };
 	return ijk;
 }
 
-node Grid::get_node(int i, int j, int k) {
+node Grid::get_node(const size_t & i, const size_t & j, const size_t & k) {
 	return this->values[i][j][k];
 }
 
-alglib::real_1d_array Grid::get_xyz(int i, int j, int k) {
+void Grid::set_node(const size_t & i, const size_t & j, const size_t & k, node p) {
+	this->values[i][k][j] = p;
+}
+
+alglib::real_1d_array Grid::get_xyz(const size_t & i, const size_t & j, const size_t & k) {
 	alglib::real_1d_array t;
 	t.setlength(3);
 
