@@ -6,7 +6,7 @@ Grid::Grid() {
 	this->KMAX = 0;
 }
 
-void Grid::read_file(const size_t IMAX, const size_t JMAX, const size_t KMAX, const std::string filename) {
+void Grid::read_file(const int IMAX, const int JMAX, const int KMAX, const std::string filename) {
 	std::ifstream data_file;
 	std::string path = "../data/" + filename;
 	double buf;
@@ -16,18 +16,18 @@ void Grid::read_file(const size_t IMAX, const size_t JMAX, const size_t KMAX, co
 	this->KMAX = KMAX;
 
 	this->values.resize(IMAX);
-	for (size_t i = 0; i < IMAX; i++) {
+	for (int i = 0; i < IMAX; i++) {
 		this->values[i].resize(KMAX);
-		for (size_t k = 0; k < KMAX; k++)
+		for (int k = 0; k < KMAX; k++)
 			this->values[i][k].resize(JMAX);
 	}
 
 	data_file.open(path, std::ios::in | std::ios::binary);
 	if (data_file.is_open()) {
-		for (size_t i = 0; i < IMAX; i++)  //считывание из файла
-			for (size_t k = 0; k < KMAX; k++) {
+		for (int i = 0; i < IMAX; i++)  //считывание из файла
+			for (int k = 0; k < KMAX; k++) {
 
-				for (size_t j = 0; j < JMAX; j++)
+				for (int j = 0; j < JMAX; j++)
 					data_file.read((char*)&this->values[i][k][j], sizeof(node));
 
 				// ненужные нам пока qw и tauw, с ними отдельно,
@@ -49,9 +49,9 @@ std::pair<alglib::real_2d_array, alglib::integer_1d_array> Grid::get_X_tags() {
 	X.setlength(this->IMAX * this->JMAX * this->KMAX, 3);
 	tags.setlength(this->IMAX * this->JMAX * this->KMAX);
 
-	for (size_t i = 0; i < this->IMAX; i++)
-		for (size_t k = 0; k < this->KMAX; k++)
-			for (size_t j = 0; j < this->JMAX; j++) {
+	for (int i = 0; i < this->IMAX; i++)
+		for (int k = 0; k < this->KMAX; k++)
+			for (int j = 0; j < this->JMAX; j++) {
 				X[counter][0] = this->values[i][k][j].x;
 				X[counter][1] = this->values[i][k][j].y;
 				X[counter][2] = this->values[i][k][j].z;
@@ -67,22 +67,22 @@ index Grid::get_ijk() {
 	return ijk;
 }
 
-index Grid::get_ijk(const size_t & n) {
+index Grid::get_ijk(const int & n) {
 	int n_ = n % (this->KMAX * this->JMAX);
 
 	index ijk = { n / (this->KMAX * this->JMAX), n_ % this->JMAX, n_ / this->JMAX };
 	return ijk;
 }
 
-node Grid::get_node(const size_t & i, const size_t & j, const size_t & k) {
+node Grid::get_node(const int & i, const int & j, const int & k) {
 	return this->values[i][j][k];
 }
 
-void Grid::set_node(const size_t & i, const size_t & j, const size_t & k, node p) {
+void Grid::set_node(const int & i, const int & j, const int & k, node p) {
 	this->values[i][k][j] = p;
 }
 
-alglib::real_1d_array Grid::get_xyz(const size_t & i, const size_t & j, const size_t & k) {
+alglib::real_1d_array Grid::get_xyz(const int & i, const int & j, const int & k) {
 	alglib::real_1d_array t;
 	t.setlength(3);
 

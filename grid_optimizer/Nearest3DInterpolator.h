@@ -17,6 +17,7 @@ private:
 	void shift(index & ijk, const bool & left);
 	double plane_position(const alglib::real_1d_array & o, const alglib::real_1d_array & a,
 		const alglib::real_1d_array & b, const alglib::real_1d_array & point);
+	alglib::real_1d_array get_test_point(const index & ijk_vc);
 public:
 	int locate_cnt;
 	int interpolate_cnt;

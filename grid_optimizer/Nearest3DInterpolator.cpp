@@ -20,20 +20,22 @@ void Nearest3DInterpolator::project() {
 	index ijk_v;
 
 	// iterate over detailed points
-	for (size_t i = 0; i < ijk[0] - 1; i++)	{
-		for (size_t k = 0; k < ijk[2] - 1; k++) {
-			for (size_t j = 1; j < ijk[1] - 1; j++)	{
+	for (int i = 0; i < ijk[0]; i++)	{
+		for (int k = 0; k < ijk[2]; k++) {
+			for (int j = 1; j < ijk[1]; j++)	{
 				// find nearest node and get it's tag
 				alglib::kdtreequeryknn(this->rough_grid_tree, this->detailed_grid.get_xyz(i, k, j), 1);
 				alglib::kdtreequeryresultstags(this->rough_grid_tree, tag);
 				// get nearest node's ijk
 				ijk_v = this->rough_grid.get_ijk(tag[0]);
-				std::cout << tag.tostring() << std::endl;
+				//std::cout << tag.tostring() << std::endl;
 				ijk_c = {i, j, k};
-				std::cout << ijk_c[0] << ' ' << ijk_c[1] << ' ' << ijk_c[2] << std::endl;
+				//std::cout << ijk_c[0] << ' ' << ijk_c[1] << ' ' << ijk_c[2] << std::endl;
 				// location and interpolation
 				this->locate(ijk_c, ijk_v);
 			}
+			std::cout << "\t\tk = " << k << " n_location = " << this->locate_cnt <<
+				" n_interpolation = " << this->interpolate_cnt << std::endl;
 		}
 		std::cout << "i = " << i << " n_location = " << this->locate_cnt <<
 			" n_interpolation = " << this->interpolate_cnt << std::endl;
@@ -43,8 +45,8 @@ void Nearest3DInterpolator::project() {
 bool Nearest3DInterpolator::hex_exists(const index & ijk_vc) {
 	// check if indices belong to the domain
 	index ijk_max = this->rough_grid.get_ijk();
-	for (size_t i = 0; i < ijk_vc.size(); i++)
-		if ((ijk_vc[i] < 0) || (ijk_vc[i] >= ijk_max[i]))
+	for (int i = 0; i < ijk_vc.size(); i++)
+		if ((ijk_vc[i] < 0) || (ijk_vc[i] + 1 >= ijk_max[i]))
 			return false;
 	return true;
 }
@@ -58,11 +60,12 @@ bool Nearest3DInterpolator::spatial_convex_inclusion(const index & ijk_c, const 
 	index df_tmp, da, db;
 	alglib::real_1d_array op, ap, bp, point;
 	point = this->detailed_grid.get_xyz(ijk_c[0], ijk_c[2], ijk_c[1]);
+	//point = this->get_test_point(ijk_vc);
 	// iterate over main points (boxmin and boxmax)
 	for (const auto &step : steps) {
 		df_tmp = { step[0], step[1], step[2] };
 		// iterate over main points' planes (every main point has 3 planes)
-		for (size_t _ = 0; _ < 3; _++) {
+		for (int _ = 0; _ < 3; _++) {
 			// get coords of main point (O)
 			if (step[3])
 				op = this->rough_grid.get_xyz(ijk_vc[0], ijk_vc[2], ijk_vc[1]);
@@ -71,16 +74,16 @@ bool Nearest3DInterpolator::spatial_convex_inclusion(const index & ijk_c, const 
 			// get coords of A point
 			ap = this->rough_grid.get_xyz(ijk_vc[0] + df_tmp[0],
 				ijk_vc[2] + df_tmp[2], ijk_vc[1] + df_tmp[1]);
-			this->shift(df_tmp, true);
+			this->shift(df_tmp, step[3]);
 			// get coords of B point
 			bp = this->rough_grid.get_xyz(ijk_vc[0] + df_tmp[0],
 				ijk_vc[2] + df_tmp[2], ijk_vc[1] + df_tmp[1]);
 			// check location relative to the current plane
-			std::cout << "O: " << op.tostring(6) << std::endl;
-			std::cout << "A: " << ap.tostring(6) << std::endl;
-			std::cout << "B: " << bp.tostring(6) << std::endl;
-			std::cout << "P: " << point.tostring(6) << std::endl;
-			if (this->plane_position(op, ap, bp, point) >= 0)
+			//std::cout << "O: " << op.tostring(6) << std::endl;
+			//std::cout << "A: " << ap.tostring(6) << std::endl;
+			//std::cout << "B: " << bp.tostring(6) << std::endl;
+			//std::cout << "P: " << point.tostring(6) << std::endl;
+			if (this->plane_position(op, bp, ap, point) >= 0)
 				return false;
 		}
 	}
@@ -119,9 +122,9 @@ std::vector<index> Nearest3DInterpolator::get_vertices(const index & ijk_vc) {
 	// get 8 vertices of current hexahedron
 	std::vector<index> vertices;
 	index vertice;
-	for (size_t i = 0; i < 2; i++)
-		for (size_t j = 0; j < 2; j++)
-			for (size_t k = 0; k < 2; k++) {
+	for (int i = 0; i < 2; i++)
+		for (int j = 0; j < 2; j++)
+			for (int k = 0; k < 2; k++) {
 				vertice = { ijk_vc[0] + i, ijk_vc[1] + j, ijk_vc[2] + k };
 				vertices.push_back(vertice);
 			}
@@ -182,7 +185,7 @@ void Nearest3DInterpolator::interpolate(const index & ijk, const std::vector<ind
 
 void Nearest3DInterpolator::shift(index & ijk, const bool & left) {
 	// cyclic shift
-	size_t tmp;
+	int tmp;
 	// to left
 	if (left) {
 		tmp = ijk[0];
@@ -204,7 +207,21 @@ double Nearest3DInterpolator::plane_position(const alglib::real_1d_array & o,
 	const alglib::real_1d_array & point) {
 	// calculate normal to plane
 	// and then dot product with OP
-	return ((a[2] - o[2]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[2] - o[2])) * (point[0] - o[0]) +
-		((a[0] - o[0]) * (b[2] - o[2]) - (a[2] - o[2]) * (b[0] - o[0])) * (point[1] - o[1]) +
-		((a[1] - o[1]) * (b[0] - o[0]) - (a[0] - o[0]) * (b[1] - o[1])) * (point[2] - o[2]);
+	return ((a[1] - o[1]) * (b[2] - o[2]) - (a[2] - o[2]) * (b[1] - o[1])) * (point[0] - o[0]) +
+		((a[2] - o[2]) * (b[0] - o[0]) - (a[0] - o[0]) * (b[2] - o[2])) * (point[1] - o[1]) +
+		((a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])) * (point[2] - o[2]);
+}
+
+alglib::real_1d_array Nearest3DInterpolator::get_test_point(const index & ijk_vc) {
+	alglib::real_1d_array point = "[0.0, 0.0, 0.0]", tmp;
+	for (int i = 0; i < 2; i++)
+		for (int k = 0; k < 2; k++)
+			for (int j = 0; j < 2; j++) {
+				tmp = this->rough_grid.get_xyz(ijk_vc[0] + i, ijk_vc[2] + k, ijk_vc[1] + j);
+				for (int m = 0; m < 3; m++)
+					point[m] += tmp[m];
+			}
+	for (int m = 0; m < 3; m++)
+		point[m] /= 8;
+	return point;
 }
