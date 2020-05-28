@@ -136,6 +136,7 @@
     <ClInclude Include="KDTree\alglibmisc.h" />
     <ClInclude Include="KDTree\ap.h" />
     <ClInclude Include="Nearest3DInterpolator.h" />
+    <ClInclude Include="PBar.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\data\detailed_grid.dat" />

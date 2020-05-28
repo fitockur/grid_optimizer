@@ -14,6 +14,7 @@ void Grid::read_file(const int IMAX, const int JMAX, const int KMAX, const std::
 	this->IMAX = IMAX;
 	this->JMAX = JMAX;
 	this->KMAX = KMAX;
+	this->source = filename;
 
 	this->values.resize(IMAX);
 	for (int i = 0; i < IMAX; i++) {
@@ -79,7 +80,7 @@ node Grid::get_node(const int & i, const int & j, const int & k) {
 }
 
 void Grid::set_node(const int & i, const int & j, const int & k, node p) {
-	this->values[i][k][j] = p;
+	this->values[i][j][k] = p;
 }
 
 alglib::real_1d_array Grid::get_xyz(const int & i, const int & j, const int & k) {
@@ -91,4 +92,21 @@ alglib::real_1d_array Grid::get_xyz(const int & i, const int & j, const int & k)
 	t[2] = this->values[i][j][k].z;
 
 	return t;
+}
+
+void Grid::write_file() {
+	std::ofstream data_file;
+	std::string path = "../data/" + this->source.substr(0, this->source.find(".")) + "_res.dat";
+
+	data_file.open(path, std::ios::out | std::ios::binary);
+	if (data_file.is_open()) {
+		for (int i = 0; i < this->IMAX; i++)
+			for (int k = 0; k < this->KMAX; k++)
+				for (int j = 0; j < this->JMAX; j++)
+					data_file.write((char*)&this->values[i][k][j], sizeof(node));
+		// close the opened file.
+		data_file.close();
+	}
+	else
+		std::cout << "ERROR! File '" << this->source << "' is not created." << std::endl;
 }

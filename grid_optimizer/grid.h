@@ -32,7 +32,9 @@ public:
 	node get_node(const int & i, const int & j, const int & k);
 	void set_node(const int & i, const int & j, const int & k, node p);
 	alglib::real_1d_array get_xyz(const int & i, const int & j, const int & k);
+	void write_file();
 private:
+	std::string source;
 	int IMAX;
 	int JMAX;
 	int KMAX;

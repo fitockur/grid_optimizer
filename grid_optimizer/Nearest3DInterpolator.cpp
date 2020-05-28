@@ -18,11 +18,13 @@ void Nearest3DInterpolator::project() {
 	alglib::integer_1d_array tag;
 	index ijk_c;
 	index ijk_v;
-
+	progresscpp::ProgressBar progressBar(ijk[0], 70);
+	//auto start_0 = std::chrono::high_resolution_clock::now();
 	// iterate over detailed points
-	for (int i = 0; i < ijk[0]; i++)	{
+	for (int i = 0; i < ijk[0]; i++) {
+		//auto start_i = std::chrono::high_resolution_clock::now();
 		for (int k = 0; k < ijk[2]; k++) {
-			for (int j = 1; j < ijk[1]; j++)	{
+			for (int j = 1; j < ijk[1]; j++) {
 				// find nearest node and get it's tag
 				alglib::kdtreequeryknn(this->rough_grid_tree, this->detailed_grid.get_xyz(i, k, j), 1);
 				alglib::kdtreequeryresultstags(this->rough_grid_tree, tag);
@@ -34,12 +36,22 @@ void Nearest3DInterpolator::project() {
 				// location and interpolation
 				this->locate(ijk_c, ijk_v);
 			}
-			std::cout << "\t\tk = " << k << " n_location = " << this->locate_cnt <<
-				" n_interpolation = " << this->interpolate_cnt << std::endl;
+			//std::cout << "\t\tk = " << k << " n_location = " << this->locate_cnt <<
+				//" n_interpolation = " << this->interpolate_cnt << std::endl;
 		}
-		std::cout << "i = " << i << " n_location = " << this->locate_cnt <<
-			" n_interpolation = " << this->interpolate_cnt << std::endl;
+		//auto stop_i = std::chrono::high_resolution_clock::now();
+		//auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop_i - start_i);
+		//system("cls");
+		//std::cout << "I = " << i << "\n\tn_location = " << this->locate_cnt <<
+			//"\n\tn_interpolation = " << this->interpolate_cnt << std::endl <<
+			//"\nTime taken by current iteration: " << duration.count() << " seconds" << std::endl <<
+			//"\nRemaining runtime of approximately: " << duration.count() * (ijk[0] - i) <<
+			//" seconds" << std::endl;
+		++progressBar;
+		progressBar.display();
 	}
+	progressBar.done();
+	this->detailed_grid.write_file();
 }
 
 bool Nearest3DInterpolator::hex_exists(const index & ijk_vc) {

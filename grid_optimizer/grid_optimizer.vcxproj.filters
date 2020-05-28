@@ -50,6 +50,9 @@
     <ClInclude Include="Nearest3DInterpolator.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="PBar.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\data\detailed_grid.dat">
