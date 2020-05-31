@@ -29,6 +29,8 @@ private:
 public:
 	int locate_cnt;
 	int interpolate_cnt;
+	int locate_b_cnt;
+	int interpolate_b_cnt;
 	Nearest3DInterpolator(int rough_i, int rough_j, int rough_k, std::string rough_source,
 		int detailed_i, int detailed_j, int detailed_k, std::string detailed_source);
 	void project();

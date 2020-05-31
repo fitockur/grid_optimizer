@@ -9,7 +9,6 @@ Grid::Grid() {
 void Grid::read_file(const int IMAX, const int JMAX, const int KMAX, const std::string filename) {
 	std::ifstream data_file;
 	std::string path = "../data/" + filename;
-	double buf;
 
 	this->IMAX = IMAX;
 	this->JMAX = JMAX;
