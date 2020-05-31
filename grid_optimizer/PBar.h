@@ -41,6 +41,27 @@ namespace progresscpp {
 			std::cout.flush();
 		}
 
+		void display(int iter, int n_loc, int n_int) const {
+			float progress = (float)ticks / total_ticks;
+			int pos = (int)(bar_width * progress);
+
+			std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+			auto time_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start_time).count();
+
+			std::cout << "[";
+
+			for (int i = 0; i < bar_width; ++i) {
+				if (i < pos) std::cout << complete_char;
+				else if (i == pos) std::cout << ">";
+				else std::cout << incomplete_char;
+			}
+			std::cout << "] " << int(progress * 100.0) << "% "
+				<< float(time_elapsed) / 1000.0 << "s"
+				<< " I=" << iter << " n_loc=" << n_loc
+				<< " n_int=" << n_int << "\r";
+			std::cout.flush();
+		}
+
 		void done() const {
 			display();
 			std::cout << std::endl;

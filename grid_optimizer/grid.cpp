@@ -17,8 +17,10 @@ void Grid::read_file(const int IMAX, const int JMAX, const int KMAX, const std::
 	this->source = filename;
 
 	this->values.resize(IMAX);
+	this->values_tan.resize(IMAX);
 	for (int i = 0; i < IMAX; i++) {
 		this->values[i].resize(KMAX);
+		this->values_tan[i].resize(KMAX);
 		for (int k = 0; k < KMAX; k++)
 			this->values[i][k].resize(JMAX);
 	}
@@ -29,12 +31,10 @@ void Grid::read_file(const int IMAX, const int JMAX, const int KMAX, const std::
 			for (int k = 0; k < KMAX; k++) {
 
 				for (int j = 0; j < JMAX; j++)
-					data_file.read((char*)&this->values[i][k][j], sizeof(node));
+					data_file.read((char*)&this->values[i][k][j], sizeof(std::array<double, 12>));
 
-				// ненужные нам пока qw и tauw, с ними отдельно,
-				// когда все сойдется, чтоб зря с собой не таскать
-				data_file.read((char*)&buf, sizeof(double));
-				data_file.read((char*)&buf, sizeof(double));
+				// qw и tauw,
+				data_file.read((char*)&this->values_tan[i][k], sizeof(std::array<double, 2>));
 			}
 		// close the opened file.
 		data_file.close();
@@ -43,23 +43,22 @@ void Grid::read_file(const int IMAX, const int JMAX, const int KMAX, const std::
 		std::cout << "ERROR! File '" << filename << "' not found." << std::endl;
 }
 
-std::pair<alglib::real_2d_array, alglib::integer_1d_array> Grid::get_X_tags() {
+std::pair<alglib::real_2d_array, alglib::integer_1d_array> Grid::get_X_tags(int b) {
 	alglib::real_2d_array X;
 	alglib::integer_1d_array tags;
-	int counter = 0;
-	X.setlength(this->IMAX * this->JMAX * this->KMAX, 3);
-	tags.setlength(this->IMAX * this->JMAX * this->KMAX);
+	int counter = 0, jmax = (1 + (this->JMAX - 1) * b);
+		X.setlength(this->IMAX * jmax * this->KMAX, 3);
+		tags.setlength(this->IMAX * jmax * this->KMAX);
 
 	for (int i = 0; i < this->IMAX; i++)
 		for (int k = 0; k < this->KMAX; k++)
-			for (int j = 0; j < this->JMAX; j++) {
-				X[counter][0] = this->values[i][k][j].x;
-				X[counter][1] = this->values[i][k][j].y;
-				X[counter][2] = this->values[i][k][j].z;
+			for (int j = 0; j < jmax; j++) {
+				X[counter][0] = this->values[i][k][j][9];
+				X[counter][1] = this->values[i][k][j][10];
+				X[counter][2] = this->values[i][k][j][11];
 				tags[counter] = counter;
 				counter++;
 			}
-
 	return std::make_pair(X, tags);
 }
 
@@ -68,28 +67,37 @@ index Grid::get_ijk() {
 	return ijk;
 }
 
-index Grid::get_ijk(const int & n) {
-	int n_ = n % (this->KMAX * this->JMAX);
+index Grid::get_ijk(const int & n, int b) {
+	int jmax = (1 + (this->JMAX - 1) * b);
+	int n_ = n % (this->KMAX * jmax);
 
-	index ijk = { n / (this->KMAX * this->JMAX), n_ % this->JMAX, n_ / this->JMAX };
+	index ijk = { n / (this->KMAX * jmax), n_ % jmax, n_ / jmax };
 	return ijk;
 }
 
-node Grid::get_node(const int & i, const int & j, const int & k) {
+std::array<double, 12> Grid::get_node(const int & i, const int & j, const int & k) {
 	return this->values[i][j][k];
 }
 
-void Grid::set_node(const int & i, const int & j, const int & k, node p) {
+std::array<double, 2> Grid::get_node_tau(const int & i, const int & k) {
+	return this->values_tan[i][k];
+}
+
+void Grid::set_node(const int & i, const int & j, const int & k, std::array<double, 12> p) {
 	this->values[i][j][k] = p;
+}
+
+void Grid::set_node_tau(const int & i, const int & k, std::array<double, 2> p) {
+	this->values_tan[i][k] = p;
 }
 
 alglib::real_1d_array Grid::get_xyz(const int & i, const int & j, const int & k) {
 	alglib::real_1d_array t;
 	t.setlength(3);
 
-	t[0] = this->values[i][j][k].x;
-	t[1] = this->values[i][j][k].y;
-	t[2] = this->values[i][j][k].z;
+	t[0] = this->values[i][j][k][9];
+	t[1] = this->values[i][j][k][10];
+	t[2] = this->values[i][j][k][11];
 
 	return t;
 }
@@ -101,9 +109,11 @@ void Grid::write_file() {
 	data_file.open(path, std::ios::out | std::ios::binary);
 	if (data_file.is_open()) {
 		for (int i = 0; i < this->IMAX; i++)
-			for (int k = 0; k < this->KMAX; k++)
+			for (int k = 0; k < this->KMAX; k++) {
 				for (int j = 0; j < this->JMAX; j++)
-					data_file.write((char*)&this->values[i][k][j], sizeof(node));
+					data_file.write((char*)&this->values[i][k][j], sizeof(std::array<double, 12>));
+				data_file.write((char*)&this->values_tan[i][k], sizeof(std::array<double, 2>));
+			}
 		// close the opened file.
 		data_file.close();
 	}
