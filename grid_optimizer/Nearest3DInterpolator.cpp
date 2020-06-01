@@ -3,8 +3,7 @@
 
 Nearest3DInterpolator::Nearest3DInterpolator(int rough_i, int rough_j, int rough_k, std::string rough_source,
 	int detailed_i, int detailed_j, int detailed_k, std::string detailed_source) {
-	this->locate_cnt = 0;
-	this->locate_b_cnt = 0;
+	this->n_iter = 0;
 	this->interpolate_cnt = 0;
 	this->interpolate_b_cnt = 0;
 	// read rough grid
@@ -42,6 +41,7 @@ void Nearest3DInterpolator::project() {
 			ijk_c = { i, 0, k };
 			// location and interpolation
 			this->locate_b(ijk_c, ijk_v);
+			this->n_iter++;
 			for (int j = 1; j < ijk[1]; j++) {
 				// find nearest node and get it's tag
 				alglib::kdtreequeryknn(this->rough_grid_tree, this->detailed_grid.get_xyz(i, k, j), 1); 
@@ -51,11 +51,11 @@ void Nearest3DInterpolator::project() {
 				ijk_c = {i, j, k};
 				// location and interpolation
 				this->locate(ijk_c, ijk_v);
+				this->n_iter++;
 			}
 		}
 		++progressBar;
-		progressBar.display(i, this->locate_cnt, this->interpolate_cnt,
-			this->locate_b_cnt, this->interpolate_b_cnt);
+		progressBar.display(i, this->n_iter, this->interpolate_cnt, this->interpolate_b_cnt);
 	}
 	progressBar.done();
 	std::cout << "Writing results..." << std::endl;
@@ -162,15 +162,13 @@ void Nearest3DInterpolator::locate(const index & ijk, const index & ijk_v) {
 	index ijk_vc;
 	ijk_vc.resize(3);
 	std::vector<index> vertices;
-	bool finish = false;
 	// iterate over 8 hexahedrons
-	for (int di = 0; di > -2 && !finish; di--) {
-		for (int dk = 0; dk > -2 && !finish; dk--) {
-			for (int dj = 0; dj > -2 && !finish; dj--) {
+	for (int di = 0; di > -2; di--) {
+		for (int dk = 0; dk > -2; dk--) {
+			for (int dj = 0; dj > -2; dj--) {
 				ijk_vc[0] = ijk_v[0] + di;
 				ijk_vc[1] = ijk_v[1] + dj;
 				ijk_vc[2] = ijk_v[2] + dk;
-				this->locate_cnt++;
 				// check existing and spatial convex inclusion of current hexahedron
 				if (this->hex_exists(ijk_vc) && this->spatial_convex_inclusion(ijk, ijk_vc)) {
 					// get vertices of current hexahedron
@@ -179,15 +177,21 @@ void Nearest3DInterpolator::locate(const index & ijk, const index & ijk_v) {
 					this->interpolate(ijk, vertices);
 					this->interpolate_cnt++;
 					// stop if at least once the point is interpolated
-					finish = true;
+					return;
 				}
 			}
 		}
 	}
+	// define with nearest node
+	std::array<double, 12> rough_node = this->rough_grid.get_node(ijk_v[0], ijk_v[2], ijk_v[1]);
+	std::array<double, 12> detailed_node = this->detailed_grid.get_node(ijk[0], ijk[2], ijk[1]);
+	for (size_t i = 0; i < 9; i++)
+		detailed_node[i] = rough_node[i];
+	this->detailed_grid.set_node(ijk[0], ijk[2], ijk[1], detailed_node);
 }
 
 void Nearest3DInterpolator::locate_b(const index & ijk, const index & ijk_v) {
-	std::vector< std::vector<index>> ijk_vc = {
+	std::vector<std::vector<index>> ijk_vc = {
 		{
 			{ijk_v[0], ijk_v[1], ijk_v[2]},
 			{ijk_v[0] - 1, ijk_v[1], ijk_v[2]},
@@ -212,16 +216,26 @@ void Nearest3DInterpolator::locate_b(const index & ijk, const index & ijk_v) {
 	alglib::real_1d_array xyz_pr;
 	xyz_pr.setlength(3);
 	for (const auto &ijk_vc_i : ijk_vc) {
-		this->locate_b_cnt++;
 		// check existing and spatial convex inclusion of current hexahedron
 		if (this->plane_exists(ijk_vc_i) && this->plane_inclusion(ijk, ijk_vc_i, xyz_pr)) {
 			// interpolate values in point of detailed grid
 			this->interpolate_b(ijk, ijk_vc_i, xyz_pr);
 			this->interpolate_b_cnt++;
 			// stop if at least once the point is interpolated
-			break;
+			return;
 		}
 	}
+	// define with nearest node
+	std::array<double, 12> rough_node = this->rough_grid.get_node(ijk_v[0], ijk_v[2], ijk_v[1]);
+	std::array<double, 2> rough_tau = this->rough_grid.get_node_tau(ijk_v[0], ijk_v[2]);
+	std::array<double, 12> detailed_node = this->detailed_grid.get_node(ijk[0], ijk[2], ijk[1]);
+	std::array<double, 2> detailed_tau = this->detailed_grid.get_node_tau(ijk[0], ijk[2]);
+	detailed_tau[0] = rough_tau[0];
+	detailed_tau[1] = rough_tau[1];
+	for (size_t i = 0; i < 9; i++)
+		detailed_node[i] = rough_node[i];
+	this->detailed_grid.set_node(ijk[0], ijk[2], ijk[1], detailed_node);
+	this->detailed_grid.set_node_tau(ijk[0], ijk[2], detailed_tau);
 }
 
 std::vector<index> Nearest3DInterpolator::get_vertices(const index & ijk_vc) {

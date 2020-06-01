@@ -41,7 +41,7 @@ namespace progresscpp {
 			std::cout.flush();
 		}
 
-		void display(int iter, int n_loc, int n_int, int n_loc_b, int n_int_b) const {
+		void display(int iter, int n_iter, int n_int, int n_int_b) const {
 			float progress = (float)ticks / total_ticks;
 			int pos = (int)(bar_width * progress);
 
@@ -57,9 +57,9 @@ namespace progresscpp {
 			}
 			std::cout << "] " << int(progress * 100.0) << "% "
 				<< float(time_elapsed) / 1000.0 << "s"
-				<< " I=" << iter << " n_loc=" << n_loc
-				<< " n_int=" << n_int << " n_loc_b=" << n_loc_b
-				<< " n_int_b=" << n_int_b << "\r";
+				<< " I=" << iter << " n_iter=" << n_iter
+				<< " n_int=" << n_int << " n_int_b=" << n_int_b 
+				<< " n_loc=" << n_iter - n_int - n_int_b << "\r";
 			std::cout.flush();
 		}
 
