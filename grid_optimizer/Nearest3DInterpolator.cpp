@@ -29,7 +29,7 @@ void Nearest3DInterpolator::project() {
 	index ijk_c;
 	index ijk_v;
 	std::cout << std::endl << "Run projecting!" << std::endl << std::endl;
-	progresscpp::ProgressBar progressBar(ijk[0], 40);
+	progresscpp::ProgressBar progressBar(ijk[0], 25);
 	// iterate over detailed points
 	for (int i = 0; i < ijk[0]; i++) {
 		for (int k = 0; k < ijk[2]; k++) {
@@ -60,6 +60,8 @@ void Nearest3DInterpolator::project() {
 	progressBar.done();
 	std::cout << "Writing results..." << std::endl;
 	this->detailed_grid.write_file();
+	std::cout << "Writing TecPlot..." << std::endl;
+	this->detailed_grid.to_tecplot();
 	std::cout << std::endl << "Done!" << std::endl << std::endl;
 }
 

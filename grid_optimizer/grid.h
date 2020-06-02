@@ -36,6 +36,7 @@ public:
 	void set_node_tau(const int & i, const int & k, std::array<double, 2> p);
 	alglib::real_1d_array get_xyz(const int & i, const int & j, const int & k);
 	void write_file();
+	void to_tecplot();
 private:
 	std::string source;
 	int IMAX;

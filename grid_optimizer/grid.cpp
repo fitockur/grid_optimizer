@@ -8,7 +8,6 @@ Grid::Grid() {
 
 void Grid::read_file(const int IMAX, const int JMAX, const int KMAX, const std::string filename) {
 	std::ifstream data_file;
-	std::string path = "../data/" + filename;
 
 	this->IMAX = IMAX;
 	this->JMAX = JMAX;
@@ -24,7 +23,7 @@ void Grid::read_file(const int IMAX, const int JMAX, const int KMAX, const std::
 			this->values[i][k].resize(JMAX);
 	}
 
-	data_file.open(path, std::ios::in | std::ios::binary);
+	data_file.open(filename, std::ios::in | std::ios::binary);
 	if (data_file.is_open()) {
 		for (int i = 0; i < IMAX; i++)  //считывание из файла
 			for (int k = 0; k < KMAX; k++) {
@@ -103,7 +102,7 @@ alglib::real_1d_array Grid::get_xyz(const int & i, const int & j, const int & k)
 
 void Grid::write_file() {
 	std::ofstream data_file;
-	std::string path = "../data/" + this->source.substr(0, this->source.find(".")) + "_res.dat";
+	std::string path = this->source.substr(0, this->source.find(".")) + "_res.dat";
 
 	data_file.open(path, std::ios::out | std::ios::binary);
 	if (data_file.is_open()) {
@@ -117,5 +116,48 @@ void Grid::write_file() {
 		data_file.close();
 	}
 	else
-		std::cout << "ERROR! File '" << this->source << "' is not created." << std::endl;
+		std::cout << "ERROR! File '" << path << "' is not created." << std::endl;
+}
+
+void Grid::to_tecplot() {
+	std::ofstream data_file;
+	std::string path = this->source.substr(0, this->source.find(".")) + "_res.tec";
+
+	data_file.open(path, std::ios::out);
+	if (data_file.is_open()) {
+		data_file << "TITLE = \"ebuchiy drotik\"" << std::endl;
+		data_file << "VARIABLES = \"P\", \"U\", \"V\", \"W\", \"T\", \"K\", \"OMEGA\", \"RO\", \"HT\", \"X\", \"Y\", \"Z\"" << std::endl;
+		data_file << "ZONE I=" << this->IMAX << ", K=" << this->KMAX << ", F=POINT, T=\"Body\"" << std::endl;
+		for (int k = 0; k < this->KMAX; k++)
+			for (int i = 0; i < this->IMAX; i++) {
+				for (const auto &val : this->values[i][k][0])
+					data_file << val << ' ';
+				data_file << std::endl;
+			}
+		data_file << "ZONE K=" << this->KMAX << ", J=" << this->JMAX << ", F=POINT, T=\"Back\"" << std::endl;
+		for (int k = 0; k < this->KMAX; k++)
+			for (int j = 0; j < this->JMAX; j++) {
+				for (const auto &val : this->values[this->IMAX - 1][k][j])
+					data_file << val << ' ';
+				data_file << std::endl;
+			}
+		data_file << "ZONE I=" << this->IMAX << ", J=" << this->JMAX << ", F=POINT, T=\"Down\"" << std::endl;
+		for (int j = 0; j < this->JMAX; j++)
+			for (int i = 0; i < this->IMAX; i++) {
+				for (const auto &val : this->values[i][0][j])
+					data_file << val << ' ';
+				data_file << std::endl;
+			}
+		data_file << "ZONE I=" << this->IMAX << ", J=" << this->JMAX << ", F=POINT, T=\"Up\"" << std::endl;
+		for (int j = 0; j < this->JMAX; j++)
+			for (int i = 0; i < this->IMAX; i++) {
+				for (const auto &val : this->values[i][this->KMAX - 1][j])
+					data_file << val << ' ';
+				data_file << std::endl;
+			}
+		// close the opened file.
+		data_file.close();
+	}
+	else
+		std::cout << "ERROR! The TecPLotFile is not created." << std::endl;
 }
